@@ -54,26 +54,26 @@ public:
 
 class Object {
 private:
-	std::string type;   // тип
-	std::string name;   // имя
-	int health;         // здоровье
-	int damage;         // урон
-	bool is_alive;      // статус жизни
+	std::string type;   // С‚РёРї
+	std::string name;   // РёРјСЏ
+	int health;         // Р·РґРѕСЂРѕРІСЊРµ
+	int damage;         // СѓСЂРѕРЅ
+	bool is_alive;      // СЃС‚Р°С‚СѓСЃ Р¶РёР·РЅРё
 	bool attack_state = false;
-	bool direction = true; // направление взгляда
-	int money = 0;      // деньги
+	bool direction = true; // РЅР°РїСЂР°РІР»РµРЅРёРµ РІР·РіР»СЏРґР°
+	int money = 0;      // РґРµРЅСЊРіРё
 
-	// спрайты и номера тайлов
+	// СЃРїСЂР°Р№С‚С‹ Рё РЅРѕРјРµСЂР° С‚Р°Р№Р»РѕРІ
 	sf::Vector2i nof_tile;
 	sf::Vector2i nof_health_bar = sf::Vector2i(1,6);
 	sf::Rect<int> rect;
 	sf::Sprite sprite;
 	sf::Sprite health_bar;
+	sf::Text money_text;
 
-
-	float CurrentFrame = 0; // для счетчика анимаций движения
-	float CurrentAttac = 2.99; // для счетчика анимаций атак
-	sf::Clock clock; // часы для учёта времени
+	float CurrentFrame = 0; // РґР»СЏ СЃС‡РµС‚С‡РёРєР° Р°РЅРёРјР°С†РёР№ РґРІРёР¶РµРЅРёСЏ
+	float CurrentAttac = 2.99; // РґР»СЏ СЃС‡РµС‚С‡РёРєР° Р°РЅРёРјР°С†РёР№ Р°С‚Р°Рє
+	sf::Clock clock; // С‡Р°СЃС‹ РґР»СЏ СѓС‡С‘С‚Р° РІСЂРµРјРµРЅРё
 
 	friend class Level;
 
@@ -96,6 +96,7 @@ public:
 	bool get_direction();
 	sf::Vector2i get_nof_tile();
 	sf::Vector2i get_nof_health_bar();
+	sf::Text *get_money_text_pntr();
 	int get_damage();
 	int get_health();
 	std::string get_name();
@@ -115,14 +116,14 @@ public:
 	void set_direction(bool _direction);
 };
 
-// Выгружаемые из файла объекты
+// Р’С‹РіСЂСѓР¶Р°РµРјС‹Рµ РёР· С„Р°Р№Р»Р° РѕР±СЉРµРєС‚С‹
 class objects_from_map: public Object {
 public:
 	bool behavior(sf::Event event, Game* game, int nof_object);
 	void accept_damage(int _damage, class Game* game, int nof_object);
 };
 
-// Юниты
+// Р®РЅРёС‚С‹
 class Unit: public Object {
 public:
 	Unit( int _damage, std::string _name);
@@ -137,18 +138,17 @@ public:
 	bool behavior(sf::Event event, Game* game, int nof_object);
 	void accept_damage(int _damage, class Game* game, int nof_object);
 
-	// передвижение героя вправо
+	// РїРµСЂРµРґРІРёР¶РµРЅРёРµ РіРµСЂРѕСЏ РІРїСЂР°РІРѕ
 	void run_hero_right(b2Body* playerBody);
 
-	// передвижение героя влево
+	// РїРµСЂРµРґРІРёР¶РµРЅРёРµ РіРµСЂРѕСЏ РІР»РµРІРѕ
 	void run_hero_left(b2Body* playerBody);
 
-	// передвижение героя прыжок
+	// РїРµСЂРµРґРІРёР¶РµРЅРёРµ РіРµСЂРѕСЏ РїСЂС‹Р¶РѕРє
 	void hero_jump(b2Body* playerBody);
 
-	// действия героя стрельба
+	// РґРµР№СЃС‚РІРёСЏ РіРµСЂРѕСЏ СЃС‚СЂРµР»СЊР±Р°
 	void hero_shoot(Game* game, int nof_player);
-
 };
 
 class enemy: public Unit {
@@ -171,7 +171,7 @@ public:
 	bool behavior(sf::Event event, Game* game, int nof_object);
 };
 
-// Элементы окружения
+// Р­Р»РµРјРµРЅС‚С‹ РѕРєСЂСѓР¶РµРЅРёСЏ
 class environment_element : public Object {
 public:
 	environment_element(int _damage, std::string _name);
@@ -179,7 +179,7 @@ public:
 	void accept_damage(int _damage, class Game* game, int nof_object);
 };
 
-class block : public environment_element { // под вопросом. Нет спрайта, не наносится урон.
+class block : public environment_element { // РїРѕРґ РІРѕРїСЂРѕСЃРѕРј. РќРµС‚ СЃРїСЂР°Р№С‚Р°, РЅРµ РЅР°РЅРѕСЃРёС‚СЃСЏ СѓСЂРѕРЅ.
 public:
 	block();
 
@@ -214,14 +214,14 @@ public:
 	bool behavior(sf::Event event, Game* game, int nof_object);
 };
 
-//слой для бекграунда
+//СЃР»РѕР№ РґР»СЏ Р±РµРєРіСЂР°СѓРЅРґР°
 class Layer {
 	int opasity;
 	std::vector<sf::Sprite> tiles;
 	friend class Level;
 };
 
-// Игра
+// РРіСЂР°
 class Game {
 private:
 	std::vector <Object*> player;
@@ -234,20 +234,23 @@ private:
 	std::vector<b2Body*> environment_elementBody;
 
 	std::vector<class Object*> block;
-	b2World *world = new b2World(b2Vec2(0.0f, 0.5f));
 
+
+	b2World *world = new b2World(b2Vec2(0.0f, 1.5f));
+
+	sf::Font font;
 public:
-	// создание всех объектов
+	// СЃРѕР·РґР°РЅРёРµ РІСЃРµС… РѕР±СЉРµРєС‚РѕРІ
 	Game(Level *level);
 	 
-	// отрисовка
-	void game_draw(class sf::RenderWindow* window, class Level level, class  sf::View view, int nof_player);
+	// РѕС‚СЂРёСЃРѕРІРєР°
+	void game_draw(class sf::RenderWindow* window, class Level level, sf::FloatRect visibleArea, int nof_player, std::string mode);
 
-	// поведение всех объектов
+	// РїРѕРІРµРґРµРЅРёРµ РІСЃРµС… РѕР±СЉРµРєС‚РѕРІ
 	void behavior(sf::Event event);
 
 	void attack(Object* attacker, Object* victim, int nof_victim);
-	//убить объект
+	//СѓР±РёС‚СЊ РѕР±СЉРµРєС‚
 	void die(Object* dier, int nof_object);
 	void add_object_to_environment_element(Object* object, b2Body* body);
 	void  create_object(Object* object, Level* level);
