@@ -57,6 +57,10 @@ sf::Vector2i Object::get_nof_health_bar(){
 	return nof_health_bar;
 }
 
+sf::Text* Object::get_money_text_pntr(){
+	return &money_text;
+}
+
 sf::Clock* Object::get_clock(){
 	return &clock;
 }
@@ -146,9 +150,11 @@ bool hero::behavior(sf::Event event, Game* game, int nof_object) {
 	clock->restart();
 	float* CurrentFrame = this->get_CurrentFrame();
 	float* CurrentAttac =this->get_CurrentAttac();
-	//выкуп
+	*CurrentAttac += 0.002 * time; // РєРґ РЅР° Р°С‚Р°РєСѓ
+	
+	//РІС‹РєСѓРї
 	bool flag = false;
-	if (!this->get_state()) { // мертв
+	if (!this->get_state()) { // РјРµСЂС‚РІ
 		switch (nof_object) {
 		case 0:
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) 
@@ -164,7 +170,7 @@ bool hero::behavior(sf::Event event, Game* game, int nof_object) {
 		if (flag)
 			if (this->get_money() >= 5) {
 				this->set_state(true);
-				this->set_health(-100); //нанести отрицательный урон(вылечить)
+				this->set_health(-100); //РЅР°РЅРµСЃС‚Рё РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№ СѓСЂРѕРЅ(РІС‹Р»РµС‡РёС‚СЊ)
 				this->get_health_bar_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_health_bar().x) * 32, this->get_nof_health_bar().y * 32, 45, 20));
 				this->add_money(-5);
 			}
@@ -172,7 +178,7 @@ bool hero::behavior(sf::Event event, Game* game, int nof_object) {
 		else return false;
 	}
 
-	 // текстура статики
+	 // С‚РµРєСЃС‚СѓСЂР° СЃС‚Р°С‚РёРєРё
 	int direction = (this->get_direction()) ? 0 : -1;
 	
 	if (this->get_attack_state()) {
@@ -183,34 +189,33 @@ bool hero::behavior(sf::Event event, Game* game, int nof_object) {
 			return false;
 		}
 		if((int)*CurrentFrame == 2)
-			this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame * 2 - direction*7) * 32, (this->get_nof_tile().y + 3) * 32, 32 + direction*64, 56)); // атака
-		else this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame * 2 - direction*7) * 32, (this->get_nof_tile().y + 3) * 32, 51 + direction*102, 56)); // атака
+			this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame * 2 - direction*7) * 32, (this->get_nof_tile().y + 3) * 32, 32 + direction*64, 56)); // Р°С‚Р°РєР°
+		else this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame * 2 - direction*7) * 32, (this->get_nof_tile().y + 3) * 32, 51 + direction*102, 56)); // Р°С‚Р°РєР°
 	}
 	else if (game->get_playerBody(nof_object)->GetLinearVelocity().y == 0) {
 		*CurrentFrame += 0.0045 * time;
 		if (*CurrentFrame > 10) *CurrentFrame = 0;
-		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32, (this->get_nof_tile().y + direction) * 32, 32, 32)); // покой(бег)
+		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32, (this->get_nof_tile().y + direction) * 32, 32, 32)); // РїРѕРєРѕР№(Р±РµРі)
 	}
 	else
-		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x - direction) * 32, (this->get_nof_tile().y + 2) * 32, 32, 32)); // прыжок(падение)
+		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x - direction) * 32, (this->get_nof_tile().y + 2) * 32, 32, 32)); // РїСЂС‹Р¶РѕРє(РїР°РґРµРЅРёРµ)
 
 
-	// передвижение и атака
+	// РїРµСЂРµРґРІРёР¶РµРЅРёРµ Рё Р°С‚Р°РєР°
 	switch (nof_object) {
 	case 0:
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-			this->set_direction(true);  // смотрит вправо
+			this->set_direction(true);  // СЃРјРѕС‚СЂРёС‚ РІРїСЂР°РІРѕ
 			run_hero_right(playerBody);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { 
-			this->set_direction(false); // смотрит влево
+			this->set_direction(false); // СЃРјРѕС‚СЂРёС‚ РІР»РµРІРѕ
 			run_hero_left(playerBody); 
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
 			hero_jump(playerBody);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			*CurrentAttac += 0.003 * time; // кд на атаку
 			if (*CurrentAttac > 3) {
 				*CurrentAttac = 0;
 				*CurrentFrame = 0;
@@ -222,18 +227,17 @@ bool hero::behavior(sf::Event event, Game* game, int nof_object) {
 	break;
 	case 1: 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-			this->set_direction(true);  // смотрит вправо
+			this->set_direction(true);  // СЃРјРѕС‚СЂРёС‚ РІРїСЂР°РІРѕ
 			run_hero_right(playerBody);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-			this->set_direction(false); // смотрит влево
+			this->set_direction(false); // СЃРјРѕС‚СЂРёС‚ РІР»РµРІРѕ
 			run_hero_left(playerBody);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
 			hero_jump(playerBody);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
-			*CurrentAttac += 0.003 * time; // кд на атаку
 			if (*CurrentAttac > 3) {
 				*CurrentAttac = 0;
 				*CurrentFrame = 0;
@@ -247,16 +251,16 @@ bool hero::behavior(sf::Event event, Game* game, int nof_object) {
 }
 
 void hero::run_hero_right(b2Body* playerBody) {
-	playerBody->SetLinearVelocity(b2Vec2(4.0f, playerBody->GetLinearVelocity().y));
+	playerBody->SetLinearVelocity(b2Vec2(6.0f, playerBody->GetLinearVelocity().y));
 }
 
 void hero::run_hero_left(b2Body* playerBody) {
-	playerBody->SetLinearVelocity(b2Vec2(-4.0f, playerBody->GetLinearVelocity().y));
+	playerBody->SetLinearVelocity(b2Vec2(-6.0f, playerBody->GetLinearVelocity().y));
 }
 
 void hero::hero_jump(b2Body* playerBody) {
-	if (playerBody->GetContactList()) // есть контакты с другими объектами
-		playerBody->ApplyLinearImpulse(b2Vec2(playerBody->GetLinearVelocity().x, -playerBody->GetMass() * 10), playerBody->GetWorldCenter(), true);
+	if (playerBody->GetContactList()) // РµСЃС‚СЊ РєРѕРЅС‚Р°РєС‚С‹ СЃ РґСЂСѓРіРёРјРё РѕР±СЉРµРєС‚Р°РјРё
+		playerBody->SetLinearVelocity(b2Vec2(playerBody->GetLinearVelocity().x, -8.f));
 }
 
 void hero::hero_shoot(Game* game, int nof_player) {
@@ -312,7 +316,7 @@ near_Enemy::near_Enemy() :enemy(20, "near_Enemy") {
 }
 
 bool near_Enemy::behavior(sf::Event event, Game* game, int nof_object) {
-	if (!this->get_state()) return false; // мертв
+	if (!this->get_state()) return false; // РјРµСЂС‚РІ
 
 	b2Body* enemyBody = game->get_enemyBody(nof_object);
 
@@ -326,7 +330,7 @@ bool near_Enemy::behavior(sf::Event event, Game* game, int nof_object) {
 
 	int direction = (this->get_direction()) ? 0 : -1;
 
-	//движение
+	//РґРІРёР¶РµРЅРёРµ
 	if (enemyBody->GetLinearVelocity() == b2Vec2_zero) {
 		int tmp = (rand() % 2 == 1) ? 1 : -1;
 		enemyBody->SetLinearVelocity(b2Vec2(3.0f * tmp, 0.0f));
@@ -338,21 +342,21 @@ bool near_Enemy::behavior(sf::Event event, Game* game, int nof_object) {
 			this->set_attack_state(false);
 			return false;
 		}
-		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame+1) * 32, (this->get_nof_tile().y + 2) * 32, 32, 32)); // атака
+		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame+1) * 32, (this->get_nof_tile().y + 2) * 32, 32, 32)); // Р°С‚Р°РєР°
 	}
 	else {
 		*CurrentFrame += 0.004 * time;
 		if (*CurrentFrame > 11) *CurrentFrame = 0;
-		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32, (this->get_nof_tile().y) * 32, 32, 32)); // покой(бег)
+		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32, (this->get_nof_tile().y) * 32, 32, 32)); // РїРѕРєРѕР№(Р±РµРі)
 	}
 
-	// атака героев
+	// Р°С‚Р°РєР° РіРµСЂРѕРµРІ
 	for (class b2ContactEdge* ce = game->get_enemyBody(nof_object)->GetContactList(); ce; ce = ce->next) {
 		class b2Contact* c = ce->contact;
-		for (int j = 0; j < 2; j++) {        // толкнуть и атаковать героя
+		for (int j = 0; j < 2; j++) {        // С‚РѕР»РєРЅСѓС‚СЊ Рё Р°С‚Р°РєРѕРІР°С‚СЊ РіРµСЂРѕСЏ
 			if (c->GetFixtureA() == game->get_playerBody(j)->GetFixtureList()) {
-				if (game->get_player(j)->get_state()) { // игрок жив
-					*CurrentAttac += 0.0015 * time; // ограничение скорости атаки
+				if (game->get_player(j)->get_state()) { // РёРіСЂРѕРє Р¶РёРІ
+					*CurrentAttac += 0.0015 * time; // РѕРіСЂР°РЅРёС‡РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё Р°С‚Р°РєРё
 					if (*CurrentAttac > 2) {
 						*CurrentAttac = 0;
 						this->set_attack_state(true);
@@ -372,7 +376,7 @@ long_range_Enemy::long_range_Enemy() : enemy(30, "long_range_Enemy") {
 }
 
 bool long_range_Enemy::behavior(sf::Event event, Game* game, int nof_object) {
-	if (!this->get_state()) return false; // мертв
+	if (!this->get_state()) return false; // РјРµСЂС‚РІ
 
 	b2Body* enemyBody = game->get_enemyBody(nof_object);
 
@@ -391,29 +395,28 @@ bool long_range_Enemy::behavior(sf::Event event, Game* game, int nof_object) {
 			this->set_attack_state(false);
 			return false;
 		}
-		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame*2) * 32, (this->get_nof_tile().y + 1) * 32, 32, 32)); // атака
+		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame*2) * 32, (this->get_nof_tile().y + 1) * 32, 32, 32)); // Р°С‚Р°РєР°
 	}
 	else {
 		*CurrentFrame += 0.004 * time;
 		if (*CurrentFrame > 10) *CurrentFrame = 0;
-		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32, (this->get_nof_tile().y) * 32, 32, 32)); // покой(бег)
+		this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32, (this->get_nof_tile().y) * 32, 32, 32)); // РїРѕРєРѕР№(Р±РµРі)
 	}
 
-	*CurrentAttac += 0.0015 * time; // ограничение скорости атаки
-	if (*CurrentAttac > 5) {
+	*CurrentAttac += 0.0015 * time; // РѕРіСЂР°РЅРёС‡РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё Р°С‚Р°РєРё
+	if (*CurrentAttac > 5) { // Р±СЂРѕСЃР°РЅРёРµ Р±РѕРјР±
 		*CurrentAttac = 0;
 		this->set_attack_state(true);
 		Object* bomb = new class bomb();
 		Level level;
 		b2Body* bombBody = game->create_Body(this,&level);
-		int tmp = (rand() % 2 == 1) ? 1 : -1;
-		bombBody->ApplyLinearImpulse(b2Vec2(bombBody->GetMass() * 15 * tmp, -bombBody->GetMass() * 15), bombBody->GetWorldCenter(), true);
+		int tmp = (rand() % 2 == 1) ? 1 : -1; // СЃС‚РѕСЂРѕРЅР° Р±СЂРѕСЃРєР°
+		bombBody->SetLinearVelocity(b2Vec2(5 * tmp, -10.f));
 
 		bomb->set_sprite(*this->get_sprite_pntr());
 		bomb->set_nof_tile(sf::Vector2i(1, 3));
 		bomb->get_sprite_pntr()->setTextureRect(sf::Rect <int>(bomb->get_nof_tile().x * 32, bomb->get_nof_tile().y * 32, 32, 32));
 		bomb->get_sprite_pntr()->setPosition(this->get_sprite_pntr()->getPosition().x, this->get_sprite_pntr()->getPosition().y - 32);
-		//bomb->set_rect(this->get_rect()); непонятно, зачем это
 		game->add_object_to_environment_element(bomb, bombBody);
 	}
 	return false;
@@ -454,8 +457,11 @@ bool coin::behavior(sf::Event event, Game* game, int nof_object) {
 	float* CurrentFrame = this->get_CurrentFrame();
 	float* CurrentAttac = this->get_CurrentAttac();
 	*CurrentFrame += 0.002 * time;
-	if (*CurrentFrame > 6) { // кд на взятие монет
+	if (*CurrentFrame > 6) { // РєРґ РЅР° РІР·СЏС‚РёРµ РјРѕРЅРµС‚
 		b2Body* body = game->get_environment_elementBody(nof_object);
+		b2Filter filter;
+		filter.groupIndex = -2;
+		body->GetFixtureList()->SetFilterData(filter);
 		for (int i = 0; i < 2; i++) {
 			for (b2ContactEdge* ce = body->GetContactList(); ce; ce = ce->next) {
 				b2Contact* c = ce->contact;
@@ -491,13 +497,13 @@ bool trap::behavior(sf::Event event, Game *game, int nof_object) {
 	time = time / 800;
 	clock->restart();
 
-	// атака героев
+	// Р°С‚Р°РєР° РіРµСЂРѕРµРІ
 	for (class b2ContactEdge* ce = game->get_environment_elementBody(nof_object)->GetContactList(); ce; ce = ce->next) {
 		class b2Contact* c = ce->contact;
-		for (int j = 0; j < 2; j++) {        // толкнуть и атаковать героя
+		for (int j = 0; j < 2; j++) {        // С‚РѕР»РєРЅСѓС‚СЊ Рё Р°С‚Р°РєРѕРІР°С‚СЊ РіРµСЂРѕСЏ
 			if (c->GetFixtureA() == game->get_playerBody(j)->GetFixtureList()) {
-				if (game->get_player(j)->get_state()) { // игрок жив
-					*CurrentAttac += 0.015 * time; // ограничение скорости атаки
+				if (game->get_player(j)->get_state()) { // РёРіСЂРѕРє Р¶РёРІ
+					*CurrentAttac += 0.015 * time; // РѕРіСЂР°РЅРёС‡РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё Р°С‚Р°РєРё
 					if (*CurrentAttac > 2) {
 						*CurrentAttac = 0;
 						game->attack(this, game->get_player(j), j);
@@ -530,10 +536,10 @@ bool bomb::behavior(sf::Event event, Game* game, int nof_object) {
 	if (this->get_attack_state()) {
 		*CurrentFrame += 0.006 * time;
 		if (*CurrentFrame > 6) {
-			return true; // взрывается 
+			return true; // РІР·СЂС‹РІР°РµС‚СЃСЏ 
 		}
 		switch ((int)*CurrentFrame) {
-		case 0: this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32, (this->get_nof_tile().y + 2) * 32, 32, 32)); // атака
+		case 0: this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32, (this->get_nof_tile().y + 2) * 32, 32, 32)); // Р°С‚Р°РєР°
 			break;
 		case 1: this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame) * 32 + 14, (this->get_nof_tile().y + 2) * 32, 40, 40));
 			break;
@@ -541,23 +547,23 @@ bool bomb::behavior(sf::Event event, Game* game, int nof_object) {
 			break;
 		case 3: this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame*2 -1) * 32 - 15, (this->get_nof_tile().y + 2) * 32 - 6, 52, 52));
 			break;
-		case 4: this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame*2 -1) * 32 + 10, (this->get_nof_tile().y + 2) * 32 - 8, 45, 35)); // атака
+		case 4: this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame*2 -1) * 32 + 10, (this->get_nof_tile().y + 2) * 32 - 8, 45, 35)); // Р°С‚Р°РєР°
 			break;
-		case 5: this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame*2 -2) * 32 - 3, (this->get_nof_tile().y + 2) * 32 - 9, 45, 33)); // атака
+		case 5: this->get_sprite_pntr()->setTextureRect(sf::Rect <int>((this->get_nof_tile().x + (int)*CurrentFrame*2 -2) * 32 - 3, (this->get_nof_tile().y + 2) * 32 - 9, 45, 33)); // Р°С‚Р°РєР°
 			break;
 		}
 		return false;
 		
 	}
 
-	*CurrentAttac += 0.0015 * time; // ограничение скорости атаки
+	*CurrentAttac += 0.0015 * time; // РѕРіСЂР°РЅРёС‡РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё Р°С‚Р°РєРё
 	if (*CurrentAttac > 6) {
 		this->set_attack_state(true);
 		for (int j = 0; j < 2; j++) {
 			b2Body* playerBody = game->get_playerBody(j);
 			b2Vec2 player_pos = playerBody->GetPosition();
 			if (abs(bomb_pos.x - player_pos.x) <= 70 && abs(bomb_pos.y - player_pos.y) <= 70)
-				game->attack(this, game->get_player(j), j); // наносится урон по игроку
+				game->attack(this, game->get_player(j), j); // РЅР°РЅРѕСЃРёС‚СЃСЏ СѓСЂРѕРЅ РїРѕ РёРіСЂРѕРєСѓ
 		}
 	}
 	return false;
@@ -566,32 +572,34 @@ bool bomb::behavior(sf::Event event, Game* game, int nof_object) {
 
 // **************GAME****************
 Game::Game(Level *level) {
+	if (!font.loadFromFile("Fonts/FontOver.otf")) std::cout << "ERROR! Couldn't load a font" << std::endl; // С€СЂРёС„С‚
+
 	sf::Vector2i tileSize = level->GetTileSize();
 	
-	// Обработка героев
+	// РћР±СЂР°Р±РѕС‚РєР° РіРµСЂРѕРµРІ
 	std::vector<objects_from_map*> temp = level->GetObjects("hero");
 	for (int i = 0; i < temp.size(); i++)
 		create_object(temp[i], level);
 
-	//Обработка блоков
+	//РћР±СЂР°Р±РѕС‚РєР° Р±Р»РѕРєРѕРІ
 	temp.clear();
 	temp = level->GetObjects("block");
 	for (int i = 0; i < temp.size(); i++)
 		create_object(temp[i], level);
 
-	//Обработка элементов окружения
+	//РћР±СЂР°Р±РѕС‚РєР° СЌР»РµРјРµРЅС‚РѕРІ РѕРєСЂСѓР¶РµРЅРёСЏ
 	temp.clear();
 	temp = level->GetObjects("environment_element");
 	for (int i = 0; i < temp.size(); i++)
 		create_object(temp[i], level);
 
-	//Обработка врагов
+	//РћР±СЂР°Р±РѕС‚РєР° РІСЂР°РіРѕРІ
 	temp.clear();
 	temp = level->GetObjects("enemy");
 	for (int i = 0; i < temp.size(); i++)
 		create_object(temp[i], level);
 
-	level->clear(); // удаляем вектор объектов из level
+	level->clear(); // СѓРґР°Р»СЏРµРј РІРµРєС‚РѕСЂ РѕР±СЉРµРєС‚РѕРІ РёР· level
 }
 
 void Game::create_object(Object* object, Level* level) {
@@ -600,6 +608,7 @@ void Game::create_object(Object* object, Level* level) {
 	std::vector <b2Body*> *vectorBody_pntr = NULL;
 	Object* creating_object = NULL;
 	std::string object_name = object->get_name();
+
 	if (object_name == "hero") {
 		creating_object = new class hero();
 		vector_pntr = &player;
@@ -645,9 +654,14 @@ void Game::create_object(Object* object, Level* level) {
 	creating_object->get_sprite_pntr()->setPosition(pos_environment_element.x, pos_environment_element.y - 32);
 	creating_object->set_rect(object->get_rect());
 	creating_object->set_nof_tile(object->get_nof_tile());
-	if(object_name == "hero")
+	if (object_name == "hero") {
+		sf::Text* money_text = creating_object->get_money_text_pntr();
+		money_text->setFont(font);
+		money_text->setCharacterSize(15);
+		money_text->setString("Player " + std::to_string(player.size()+1) + " money: 0");
 		creating_object->get_health_bar_pntr()->setTextureRect(sf::Rect <int>(creating_object->get_nof_health_bar().x * 32, creating_object->get_nof_health_bar().y * 32, 45, 20));
-	else creating_object->get_health_bar_pntr()->setTextureRect(sf::Rect <int>(creating_object->get_nof_health_bar().x * 32, creating_object->get_nof_health_bar().y * 32, 32, 5));
+	}
+		else creating_object->get_health_bar_pntr()->setTextureRect(sf::Rect <int>(creating_object->get_nof_health_bar().x * 32, creating_object->get_nof_health_bar().y * 32, 32, 5));
 
 	vector_pntr->push_back(creating_object);
 }
@@ -682,70 +696,124 @@ b2Body* Game::create_Body(Object* object, Level* level) {
 	return body;
 }
 
-void Game::game_draw(class sf::RenderWindow* window, class Level level, class  sf::View view, int nof_player) {
-	// изменение спрайтов всем динамическим объектам
+void Game::game_draw(class sf::RenderWindow* window, class Level level, sf::FloatRect visibleArea, int nof_player, std::string mode) {
+	// СЂР°СЃСЃС‚Р°РІР»СЏРµРј СЃС‡РµС‚С‡РёРєРё РјРѕРЅРµС‚
+	sf::Text* money_text;
+	for (int i = 0; i < 2; i++) {
+		money_text = player[i]->get_money_text_pntr();
+		//money_text.setFillColor(sf::Color::Red);
+		if (mode == "SINGLE") 
+			money_text->setPosition(playerBody[i]->GetPosition().x - visibleArea.width / 3.5, playerBody[i]->GetPosition().y - visibleArea.height / 3.5);
+		else 
+			money_text->setPosition((playerBody[0]->GetPosition().x + playerBody[1]->GetPosition().x) / 2 - visibleArea.width/1.5, (playerBody[0]->GetPosition().y + playerBody[1]->GetPosition().y) / 2 - visibleArea.height/3.5 + 20*i);
+	}
+	
+	// РѕРєРЅР° РіРµСЂРѕРµРІ
+	std::vector <sf::View> playerView;
+	sf::View generalView; // РѕР±С‰РµРµ РѕРєРЅРѕ
+	if (mode == "SINGLE") {
+		for (int i = 0; i < 2; i++) {
+			playerView.push_back(sf::View());
+			playerView[i].setViewport(sf::FloatRect(0.5f * i, 0.f, 0.5f, 1.f));
+			playerView[i].reset(visibleArea);
+			playerView[i].zoom(0.7f);
+
+			b2Vec2 pos = playerBody[i]->GetPosition();
+			playerView[i].setCenter(pos.x, pos.y); // РѕР±РЅРѕРІРёС‚СЊ С†РµРЅС‚СЂРёСЂРѕРІР°РЅРёРµ СЌРєСЂР°РЅР°
+		}
+		std::vector <sf::View> playerView;
+		playerView.push_back(sf::View());
+		playerView.push_back(sf::View());
+	}
+	else {
+		visibleArea = sf::FloatRect(0.f, 0.f, visibleArea.width * 10 / 4, visibleArea.height * 10 / 9);
+		generalView.reset(visibleArea);
+		generalView.zoom(0.56f);
+		generalView.setCenter((playerBody[0]->GetPosition().x + playerBody[1]->GetPosition().x) / 2, (playerBody[0]->GetPosition().y + playerBody[1]->GetPosition().y) / 2); // РѕР±РЅРѕРІРёС‚СЊ С†РµРЅС‚СЂРёСЂРѕРІР°РЅРёРµ СЌРєСЂР°РЅР°
+	}
+
+	// РёР·РјРµРЅРµРЅРёРµ СЃРїСЂР°Р№С‚РѕРІ РІСЃРµРј РґРёРЅР°РјРёС‡РµСЃРєРёРј РѕР±СЉРµРєС‚Р°Рј
 	for (int i = 0; i < 2; i++) {
 		b2Vec2 pos = playerBody[i]->GetPosition();
 		player[i]->get_sprite_pntr()->setPosition(pos.x, pos.y);
 		player[i]->get_health_bar_pntr()->setPosition(pos.x-10, pos.y-15);
 	}
 
-	b2Vec2 pos = playerBody[nof_player - 1]->GetPosition();
-	view.setCenter(pos.x + 0, pos.y); // обновить центрирование экрана
-	
-	window->setView(view); // отобразить новый вид экрана
-
+	// Р­Рћ
 	for (int i = 0; i < environment_element.size(); i++) {
 		environment_element[i]->get_sprite_pntr()->setPosition(environment_elementBody[i]->GetPosition().x, environment_elementBody[i]->GetPosition().y);
 	}
+	
+	//Р’СЂР°РіРё
 	for (int i = 0; i < enemy.size(); i++) {
 		if (enemy[i]->get_state()) {
 			enemy[i]->get_sprite_pntr()->setPosition(enemyBody[i]->GetPosition().x, enemyBody[i]->GetPosition().y);
 			enemy[i]->get_health_bar_pntr()->setPosition(enemyBody[i]->GetPosition().x, enemyBody[i]->GetPosition().y);
 		}
 	}
-	// отрисовка
-	level.Draw(*window); // отрисовать бекграунд
 	
-	// блоки
-	for (int i = 0; i < block.size(); i++) {
-		window->draw(*block[i]->get_sprite_pntr());
-	}
-	// ЭО
-	for (int i = 0; i < environment_element.size(); i++) {
-		window->draw(*environment_element[i]->get_sprite_pntr());
-		window->draw(*environment_element[i]->get_health_bar_pntr());
-	}
-	// враги
-	for (int i = 0; i < enemy.size(); i++) {
-		window->draw(*enemy[i]->get_sprite_pntr());
-		window->draw(*enemy[i]->get_health_bar_pntr());
-	}
-	// герои
+	// РѕС‚СЂРёСЃРѕРІРєР°
 	for (int i = 0; i < 2; i++) {
-		window->draw(*player[0]->get_sprite_pntr());
-		window->draw(*player[0]->get_health_bar_pntr());
+		if (mode == "SINGLE") 
+			window->setView(playerView[i]);
+		else 
+			window->setView(generalView);
 
-		window->draw(*player[1]->get_sprite_pntr());
-		window->draw(*player[1]->get_health_bar_pntr());
+		level.Draw(*window); // РѕС‚СЂРёСЃРѕРІР°С‚СЊ Р±РµРєРіСЂР°СѓРЅРґ
+
+		// РѕС‚СЂРёСЃРѕРІР°С‚СЊ Р±Р»РѕРєРё
+		for (int i = 0; i < block.size(); i++) {
+			window->draw(*block[i]->get_sprite_pntr());
+		}
+
+		// РѕС‚СЂРёСЃРѕРІР°С‚СЊ Р­Рћ
+		for (int i = 0; i < environment_element.size(); i++) {
+			window->draw(*environment_element[i]->get_sprite_pntr());
+			window->draw(*environment_element[i]->get_health_bar_pntr());
+		}
+
+		// РѕС‚СЂРёСЃРѕРІР°С‚СЊ РІСЂР°РіРё
+		for (int i = 0; i < enemy.size(); i++) {
+			window->draw(*enemy[i]->get_sprite_pntr());
+			window->draw(*enemy[i]->get_health_bar_pntr());
+		}
+
+		// РѕС‚СЂРёСЃРѕРІР°С‚СЊ РіРµСЂРµРІ
+		for (int i = 0; i < 2; i++) {
+			window->draw(*player[i]->get_sprite_pntr());
+			window->draw(*player[i]->get_health_bar_pntr());
+		}
+		money_text = player[i]->get_money_text_pntr();
+		window->draw(*money_text);
+
+		if (mode == "GENERAL") {
+			money_text = player[1]->get_money_text_pntr();
+			window->draw(*money_text);
+			return;
+		}
 	}
 
+	return;
 }
 
 void Game::behavior(sf::Event event) {
-	// поведение героев
+	// РїРѕРІРµРґРµРЅРёРµ РіРµСЂРѕРµРІ
 	for (int i = 0; i < player.size(); i++) 
 			player[i]->behavior(event, this, i);
 
-	// поведение врагов
+	// РїРѕРІРµРґРµРЅРёРµ РІСЂР°РіРѕРІ
 	for (int i = 0; i < enemy.size(); i++)
 		enemy[i]->behavior(event,this,i);
 
-	// поведение монет и бомб
+	// РїРѕРІРµРґРµРЅРёРµ РјРѕРЅРµС‚ Рё Р±РѕРјР±
 	for (int i = 0; i < environment_element.size(); i++) {
-		if (environment_element[i]->behavior(event, this, i)) { // bomb и coin возвращают true для самоуничтожения 
+		if (environment_element[i]->behavior(event, this, i)) { // bomb Рё coin РІРѕР·РІСЂР°С‰Р°СЋС‚ true РґР»СЏ СЃР°РјРѕСѓРЅРёС‡С‚РѕР¶РµРЅРёСЏ 
 			if(environment_element[i]->get_name() == "coin")
-				for (int i = 0; i < player.size(); i++) player[i]->add_money(1);
+				for (int i = 0; i < player.size(); i++) {
+					player[i]->add_money(1);
+					sf::Text* money_text = player[i]->get_money_text_pntr();
+					money_text->setString("Player " + std::to_string(i + 1) + " money: " + std::to_string(player[i]->get_money()));
+				}
 			environment_element.erase(environment_element.begin() + i);
 			environment_elementBody[i]->DestroyFixture(environment_elementBody[i]->GetFixtureList());
 			environment_elementBody.erase(environment_elementBody.begin() + i);
@@ -763,7 +831,7 @@ void Game::attack(Object* attacker, Object* victim, int nof_victim) {
 				if (victim->get_state()) {
 					int direction = (attacker->get_sprite_pntr()->getPosition().x - victim->get_sprite_pntr()->getPosition().x) < 0 ? 1 : -1;
 					enemyBody[nof_victim]->ApplyLinearImpulse(b2Vec2(enemyBody[nof_victim]->GetMass() * 5 * direction, enemyBody[nof_victim]->GetMass() * -5), enemyBody[nof_victim]->GetWorldCenter(), true);
-					enemy[nof_victim]->get_sprite_pntr()->setTextureRect(sf::Rect <int>(enemy[nof_victim]->get_nof_tile().x * 32, (enemy[nof_victim]->get_nof_tile().y + 1) * 32, 32, 32)); // побелить для получения урона
+					enemy[nof_victim]->get_sprite_pntr()->setTextureRect(sf::Rect <int>(enemy[nof_victim]->get_nof_tile().x * 32, (enemy[nof_victim]->get_nof_tile().y + 1) * 32, 32, 32)); // РїРѕР±РµР»РёС‚СЊ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ СѓСЂРѕРЅР°
 					victim->accept_damage(attacker->get_damage(), this, nof_victim);
 					return;
 				}
@@ -779,19 +847,22 @@ void Game::attack(Object* attacker, Object* victim, int nof_victim) {
 	else if(attacker->get_name() == "trap")
 		playerBody[nof_victim]->ApplyLinearImpulse(b2Vec2(0, playerBody[nof_victim]->GetMass() * -2), playerBody[nof_victim]->GetWorldCenter(), true);
 	
-	player[nof_victim]->get_sprite_pntr()->setTextureRect(sf::Rect <int>(player[nof_victim]->get_nof_tile().x * 32, (player[nof_victim]->get_nof_tile().y + 1) * 32, 37, 32)); // побелить для получения урона
+	player[nof_victim]->get_sprite_pntr()->setTextureRect(sf::Rect <int>(player[nof_victim]->get_nof_tile().x * 32, (player[nof_victim]->get_nof_tile().y + 1) * 32, 37, 32)); // РїРѕР±РµР»РёС‚СЊ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ СѓСЂРѕРЅР°
 	player[nof_victim]->accept_damage(attacker->get_damage(), this, nof_victim);
 }
 
 void Game::die(Object * dier, int nof_object) {
 	if (dier->get_name() == "hero") {
 		dier->set_state(false);
-		dier->get_sprite_pntr()->setTextureRect(sf::Rect <int>((dier->get_nof_tile().x + 4) * 32, (dier->get_nof_tile().y + 1) * 32 , 38, 32)); // установить тайл смерти
+		dier->get_sprite_pntr()->setTextureRect(sf::Rect <int>((dier->get_nof_tile().x + 4) * 32, (dier->get_nof_tile().y + 1) * 32 , 38, 32)); // СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚Р°Р№Р» СЃРјРµСЂС‚Рё
 	}
 	else if (dier->get_name() == "near_Enemy" || dier->get_name() == "long_range_Enemy") {
 		Level level;
 		for (int i = 0; i < 2; i++) {
 			b2Body* coinBody = create_Body(dier, &level);
+			b2Filter filter;
+			filter.groupIndex = -1;
+			coinBody->GetFixtureList()->SetFilterData(filter);
 			int tmp = (rand() % 2 == 1) ? 1 : -1;
 			coinBody->ApplyLinearImpulse(b2Vec2(coinBody->GetMass() * enemyBody[nof_object]->GetLinearVelocity().x*2, -coinBody->GetMass() * 15), coinBody->GetWorldCenter(), true);
 			environment_elementBody.push_back(coinBody);
@@ -799,7 +870,7 @@ void Game::die(Object * dier, int nof_object) {
 			Object* coin = new class coin();
 			coin->set_sprite(*this->block[0]->get_sprite_pntr());
 			coin->set_nof_tile(sf::Vector2i(7, 18));
-			coin->get_sprite_pntr()->setTextureRect(sf::Rect <int>(coin->get_nof_tile().x * 32, coin->get_nof_tile().y * 32, 32, 32)); // установить тайл смерти
+			coin->get_sprite_pntr()->setTextureRect(sf::Rect <int>(coin->get_nof_tile().x * 32, coin->get_nof_tile().y * 32, 32, 32)); // СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚Р°Р№Р» СЃРјРµСЂС‚Рё
 			sf::Vector2f pos_environment_element = dier->get_sprite_pntr()->getPosition();
 			coin->get_sprite_pntr()->setPosition(pos_environment_element.x, pos_environment_element.y - 32);
 			coin->set_rect(dier->get_rect());
@@ -807,7 +878,7 @@ void Game::die(Object * dier, int nof_object) {
 		}
 		dier->set_state(false);
 		enemyBody[nof_object]->DestroyFixture(enemyBody[nof_object]->GetFixtureList());
-		dier->get_sprite_pntr()->setTextureRect(sf::Rect <int>((dier->get_nof_tile().x + 2) * 32, (dier->get_nof_tile().y + 1) * 32, 32, 32)); // установить тайл смерти
+		dier->get_sprite_pntr()->setTextureRect(sf::Rect <int>((dier->get_nof_tile().x + 2) * 32, (dier->get_nof_tile().y + 1) * 32, 32, 32)); // СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚Р°Р№Р» СЃРјРµСЂС‚Рё
 	}
 	return;
 }
@@ -862,15 +933,15 @@ bool Level::LoadFromFile(std::string filename) {
 	tileWidth = atoi(map->Attribute("tilewidth"));
 	tileHeight = atoi(map->Attribute("tileheight"));
 
-	std::vector <int> firstTileIDs;            // первые id тайлсетов
+	std::vector <int> firstTileIDs;            // РїРµСЂРІС‹Рµ id С‚Р°Р№Р»СЃРµС‚РѕРІ
 	sf::Image image;
-	std::vector <sf::Vector2u> tileset_sizes; // размеры тайлсетов
+	std::vector <sf::Vector2u> tileset_sizes; // СЂР°Р·РјРµСЂС‹ С‚Р°Р№Р»СЃРµС‚РѕРІ
 	
-	//выгрузка тайлсетов
+	//РІС‹РіСЂСѓР·РєР° С‚Р°Р№Р»СЃРµС‚РѕРІ
 	XMLElement* tilesetElement = map->FirstChildElement("tileset");
 	do {
-		std::string tilepath = tilesetElement->Attribute("source"); // его путь(.tsx)
-		std::string imagepath = "Tiles/";                           // собираем путь к картинке на тайлсет
+		std::string tilepath = tilesetElement->Attribute("source"); // РµРіРѕ РїСѓС‚СЊ(.tsx)
+		std::string imagepath = "Tiles/";                           // СЃРѕР±РёСЂР°РµРј РїСѓС‚СЊ Рє РєР°СЂС‚РёРЅРєРµ РЅР° С‚Р°Р№Р»СЃРµС‚
 		for (int i = 0; i < tilepath.size() - 4; i++) {
 			imagepath += tilepath[i];
 		}
@@ -888,7 +959,7 @@ bool Level::LoadFromFile(std::string filename) {
 		tilesetImage[tilesetImage.size() - 1].loadFromImage(image);
 	} while (tilesetElement = tilesetElement->NextSiblingElement("tileset"));
 
-	std::vector<sf::Rect<int>> subRects; // создание квадратов на тайлсетах
+	std::vector<sf::Rect<int>> subRects; // СЃРѕР·РґР°РЅРёРµ РєРІР°РґСЂР°С‚РѕРІ РЅР° С‚Р°Р№Р»СЃРµС‚Р°С…
 	for (int i = 0; i < tileset_sizes.size(); i++) {
 		int columns = tileset_sizes[i].x / tileWidth;
 		int rows = tileset_sizes[i].y / tileHeight;
@@ -919,7 +990,7 @@ bool Level::LoadFromFile(std::string filename) {
 		layerDataElement = layerElement->FirstChildElement("data");
 		if (layerDataElement == NULL) {
 			std::cout << "Bad map. No layer information found." << std::endl;
-			return false; // в гайде этого нет
+			return false; // РІ РіР°Р№РґРµ СЌС‚РѕРіРѕ РЅРµС‚
 		}
 
 		XMLElement* tileElement;
@@ -935,28 +1006,24 @@ bool Level::LoadFromFile(std::string filename) {
 		for(int rows = 0; rows < height; rows++){ 
 			for(int columns = 0; columns < width; columns++){
 				if (tileElement->Attribute("gid")) {
-					//std::cout << rows << " " << columns << std::endl;
 					int i = 0;
 					firstTileID = firstTileIDs[firstTileIDs.size() - 1];
 					int tileGID = atoi(tileElement->Attribute("gid"));
-					int subRectToUse = tileGID - 1; // определяем тайла на тайлсете
-					while (tileGID < firstTileID) { // определяем нужный тайлсет
+					int subRectToUse = tileGID - 1; // РѕРїСЂРµРґРµР»СЏРµРј С‚Р°Р№Р»Р° РЅР° С‚Р°Р№Р»СЃРµС‚Рµ
+					while (tileGID < firstTileID) { // РѕРїСЂРµРґРµР»СЏРµРј РЅСѓР¶РЅС‹Р№ С‚Р°Р№Р»СЃРµС‚
 						i++;
 						firstTileID = firstTileIDs[firstTileIDs.size() - 1 - i];
 					}
-					//std::cout << "Sprite?" << std::endl;
 					sf::Sprite sprite;
 					sprite.setTexture(tilesetImage[tilesetImage.size() - 1 - i]);
 					sprite.setTextureRect(subRects[subRectToUse]);
 					sprite.setPosition(x * tileWidth, y * tileHeight);
 					sprite.setColor(sf::Color(255, 255, 255, layer.opasity));
 					
-					//std::cout << "ADD" << std::endl;
 					layer.tiles.push_back(sprite);
-					//std::cout << "ADDED" << std::endl;
 				}
 				tileElement = tileElement->NextSiblingElement("tile");
-				x++; // перевод строки
+				x++; // РїРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё
 				if (x >= width) {
 					x = 0;
 					y++;
@@ -964,13 +1031,12 @@ bool Level::LoadFromFile(std::string filename) {
 				}
 			}
 		}
-		//std::cout << "ADDING layer" << std::endl;
 		layers.push_back(layer);
 
 		layerElement = layerElement->NextSiblingElement("layer");
 	}
 
-	// Объекты
+	// РћР±СЉРµРєС‚С‹
 	XMLElement* objectGroupElement;
 	if (map->FirstChildElement("objectgroup") != NULL) {
 		objectGroupElement = map->FirstChildElement("objectgroup");
@@ -983,9 +1049,9 @@ bool Level::LoadFromFile(std::string filename) {
 				int i = 0;
 				firstTileID = firstTileIDs[firstTileIDs.size() - 1];
 
-				int objectGID = atoi(objectElement->Attribute("gid"));// номер тайла на тайлсете.
-				int subRectToUse = objectGID - 1; // номер прямоугольника для уточнения спрайта
-				while (objectGID < firstTileID) { // определяем нужный тайлсет
+				int objectGID = atoi(objectElement->Attribute("gid"));// РЅРѕРјРµСЂ С‚Р°Р№Р»Р° РЅР° С‚Р°Р№Р»СЃРµС‚Рµ.
+				int subRectToUse = objectGID - 1; // РЅРѕРјРµСЂ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР° РґР»СЏ СѓС‚РѕС‡РЅРµРЅРёСЏ СЃРїСЂР°Р№С‚Р°
+				while (objectGID < firstTileID) { // РѕРїСЂРµРґРµР»СЏРµРј РЅСѓР¶РЅС‹Р№ С‚Р°Р№Р»СЃРµС‚
 					i++;
 					firstTileID = firstTileIDs[firstTileIDs.size() - 1 - i];
 				}
@@ -1004,22 +1070,9 @@ bool Level::LoadFromFile(std::string filename) {
 				int width, height;
 				sf::Sprite sprite;
 				sprite.setTexture(tilesetImage[tilesetImage.size() - 1 - i]);
-				//sprite.setTextureRect(sf::Rect <int>(32, 32, 32, 32)); Он думает, что текстура задаётся целиком, но она включена в тайлсет
-				sprite.setTextureRect(subRects[subRectToUse]); // использует тайлсет, активный для конкретного объекта
+				sprite.setTextureRect(subRects[subRectToUse]); // РёСЃРїРѕР»СЊР·СѓРµС‚ С‚Р°Р№Р»СЃРµС‚, Р°РєС‚РёРІРЅС‹Р№ РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ РѕР±СЉРµРєС‚Р°
 				sprite.setPosition(x, y);
-				// взятие ширины и высоты объекта(не используется)
-				/* 
-				if (objectElement->Attribute("width") != NULL) {
-					width = atoi(objectElement->Attribute("width"));
-					height = atoi(objectElement->Attribute("height"));
-				}
-				else{
-					width = subRects[atoi(objectElement->Attribute("gid")) - firstTileID].width;
-					height = subRects[atoi(objectElement->Attribute("gid")) - firstTileID].height;
-					sprite.setTextureRect(subRects[atoi(objectElement->Attribute("gid")) - firstTileID]);
-				}
-				*/
-				// вместо этого 
+				
 				height = 32;
 				width = 32;
 
@@ -1036,24 +1089,6 @@ bool Level::LoadFromFile(std::string filename) {
 				objectRect.width = width;
 				object->rect = objectRect;
 
-				//у моих объектов нет пользовательский свойств
-				/*
-				XMLElement* properties;
-				properties = objectElement->FirstChildElement("properties");
-				if (properties != NULL) {
-					XMLElement* prop;
-					prop = properties->FirstChildElement("property");
-					if (prop != NULL) {
-						while (prop) {
-							std::string propertyName = prop->Attribute("name");
-							std::string propertyValue = prop->Attribute("value");
-							object->properties[propertyName] = propertyValue;
-							prop = prop->NextSiblingElement("property");
-						}
-					}
-				}
-				*/
-
 				objects.push_back(object);
 				objectElement = objectElement->NextSiblingElement("object");
 			}
@@ -1068,14 +1103,14 @@ bool Level::LoadFromFile(std::string filename) {
 }
 
 objects_from_map* Level::GetObject(std::string type_name){
-	// Только первый объект с заданным именем
+	// РўРѕР»СЊРєРѕ РїРµСЂРІС‹Р№ РѕР±СЉРµРєС‚ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј
 	for (int i = 0; i < objects.size(); i++)
 		if (objects[i]->type == type_name)
 			return objects[i];
 }
 
 std::vector<objects_from_map*> Level::GetObjects(std::string type_name){
-	// Все объекты с заданным именем
+	// Р’СЃРµ РѕР±СЉРµРєС‚С‹ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј
 	std::vector<objects_from_map*> vec;
 	for (int i = 0; i < objects.size(); i++)
 		if (objects[i]->type == type_name)
@@ -1095,7 +1130,7 @@ void Level::clear(){
 
 void Level::Draw(sf::RenderWindow& window)
 {
-	// Рисуем все тайлы (объекты НЕ рисуем!)
+	// Р РёСЃСѓРµРј РІСЃРµ С‚Р°Р№Р»С‹ (РѕР±СЉРµРєС‚С‹ РќР• СЂРёСЃСѓРµРј!)
 	for (int layer = 0; layer < layers.size(); layer++)
 		for (int tile = 0; tile < layers[layer].tiles.size(); tile++)
 			window.draw(layers[layer].tiles[tile]);
